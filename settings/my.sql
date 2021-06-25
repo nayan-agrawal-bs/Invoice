@@ -12,28 +12,23 @@ INSERT IGNORE INTO `engine4_core_modules` (`name`, `title`, `description`, `vers
 
 DROP TABLE IF EXISTS `engine4_invoice_invoices`;
 CREATE TABLE `engine4_invoice_invoices` (
-  `invoice_id` int(11) unsigned NOT NULL auto_increment,
-  `invoice_number` varchar(128) NOT NULL,
-  
+  `invoice_id` int UNSIGNED NOT NULL,
+  `invoice_number` varchar(128) COLLATE utf8_unicode_ci NOT NULL,
   `owner_type` varchar(64) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
-  `owner_id` int(11) unsigned NOT NULL,
-  `category_id` int(11) unsigned NOT NULL ,
-  `cust_Contact` int(11) unsigned NOT NULL , 
-  `cust_Address` varchar(64) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
-  `cust_Email`varchar(32) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
-  `currency` int(11) unsigned NOT NULL default '0',
-  `region` int(11) unsigned NOT NULL default '0',
-
+  `owner_id` int UNSIGNED NOT NULL,
+  `cust_name` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
+  `cust_contact` int UNSIGNED NOT NULL,
+  `cust_address` varchar(64) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
+  `cust_email` varchar(32) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
+  `currency` int UNSIGNED NOT NULL DEFAULT '0',
+  `region` int UNSIGNED NOT NULL DEFAULT '0',
   `creation_date` datetime NOT NULL,
   `modified_date` datetime NOT NULL,
-  `view_privacy` VARCHAR(24) NOT NULL default 'owner',
-  `networks` varchar(255) DEFAULT NULL,
-  PRIMARY KEY (`invoice_id`),
-  KEY `owner_type` (`owner_type`, `owner_id`),
-  
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE utf8_unicode_ci ;
-
-
+  `category_id` int NOT NULL,
+  `discount` int NOT NULL DEFAULT '0',
+  `status` int NOT NULL,
+  `amount` int NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci;
 
 
 -- --------------------------------------------------------
@@ -66,17 +61,12 @@ CREATE TABLE `engine4_invoice_categories` (
 
 DROP TABLE IF EXISTS `engine4_invoice_products`;
 CREATE TABLE `engine4_invoice_products` (
-  `product_id` int(11) NOT NULL auto_increment,
-  `user_id` int(11) unsigned NOT NULL,
-  `product_name` varchar(128) NOT NULL,
-  `category_name` varchar(128) NOT NULL,
-  `category_id` int(11) NOT NULL,
-  `product_price` int(11) NOT NULL,
-  PRIMARY KEY (`product_id`),
-  KEY `user_id` (`user_id`),
-  
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE utf8_unicode_ci ;
-
+  `product_id` int NOT NULL,
+  `user_id` int UNSIGNED NOT NULL,
+  `product_name` varchar(128) COLLATE utf8_unicode_ci NOT NULL,
+  `category_id` int NOT NULL,
+  `product_price` int NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci;
 
 -------------------------------------------------------------------------------------------------
 
@@ -86,12 +76,16 @@ CREATE TABLE `engine4_invoice_products` (
 
 DROP TABLE IF EXISTS `engine4_invoice_purchases`;
 CREATE TABLE `engine4_invoice_purchases` (
-  `invoice_id` int(11) NOT NULL,
-  `product_id` int(11) NOT NULL ,
-  `user_id` int(11) unsigned NOT NULL,
-  `product_name` varchar(128) NOT NULL,
-  `product_price` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE utf8_unicode_ci ;
+  `purchase_id` int NOT NULL,
+  `invoice_number` varchar(32) COLLATE utf8_unicode_ci NOT NULL,
+  `product_id` int NOT NULL,
+  `cust_email` varchar(32) COLLATE utf8_unicode_ci NOT NULL,
+  `product_name` varchar(128) COLLATE utf8_unicode_ci NOT NULL,
+  `product_price` int NOT NULL,
+  `purchase_date` date NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci;
+
+--
 
 
 

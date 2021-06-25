@@ -8,71 +8,59 @@ class Invoice_IndexController extends Core_Controller_Action_Standard
   //     if( !$this->_helper->requireAuth()->setAuthParams('invoice', null, 'view')->isValid() ) return;
   // }
 
-  // public function indexAction()
-  // {
-  //     // Prepare data
-  //     $viewer = Engine_Api::_()->user()->getViewer();
+  public function indexAction()
+  {
+    // Prepare data
+    $viewer = Engine_Api::_()->user()->getViewer();
 
-  //     // Permissions
-  //     $this->view->canCreate = $this->_helper->requireAuth()->setAuthParams('blog', null, 'create')->checkRequire();
+    // Permissions
+    //$this->view->canCreate = $this->_helper->requireAuth()->setAuthParams('blog', null, 'create')->checkRequire();
 
-  //     // Make form
-  //     // Note: this code is duplicated in the blog.browse-search widget
-  //     $this->view->form = $form = new Blog_Form_Search();
+    // Make form
+    // Note: this code is duplicated in the blog.browse-search widget
+    //$this->view->form = $form = new Blog_Form_Search();
 
-  //     $form->removeElement('draft');
-  //     if( !$viewer->getIdentity() ) {
-  //         $form->removeElement('show');
-  //     }
+    // $form->removeElement('draft');
+    // if( !$viewer->getIdentity() ) {
+    //     $form->removeElement('show');
+    // }
 
-  //     // Process form
-  //     $defaultValues = $form->getValues();
-  //     if( $form->isValid($this->_getAllParams()) ) {
-  //         $values = $form->getValues();
-  //     } else {
-  //         $values = $defaultValues;
-  //     }
-  //     $this->view->formValues = array_filter($values);
-  //     $values['draft'] = "0";
-  //     $values['visible'] = "1";
+    // // Process form
+    // $defaultValues = $form->getValues();
+    // if( $form->isValid($this->_getAllParams()) ) {
+    //     $values = $form->getValues();
+    // } else {
+    //     $values = $defaultValues;
+    // }
+    // $this->view->formValues = array_filter($values);
+    // $values['draft'] = "0";
+    // $values['visible'] = "1";
 
-  //     // Do the show thingy
-  //     if( @$values['show'] == 2 ) {
-  //         // Get an array of friend ids
-  //         $table = Engine_Api::_()->getItemTable('user');
-  //         $select = $viewer->membership()->getMembersSelect('user_id');
-  //         $friends = $table->fetchAll($select);
-  //         // Get stuff
-  //         $ids = array();
-  //         foreach( $friends as $friend )
-  //         {
-  //             $ids[] = $friend->user_id;
-  //         }
-  //         //unset($values['show']);
-  //         $values['users'] = $ids;
-  //     }
+    // Do the show thingy
+    $owner = $viewer->getIdentity();
+    $values['owner'] = $owner;
 
-  //     $this->view->assign($values);
+    //$this->view->assign($values);
 
-  //     // Get blogs
-  //     $paginator = Engine_Api::_()->getItemTable('blog')->getBlogsPaginator($values);
+    // Get blogs
+    $paginator = Engine_Api::_()->getItemTable('invoice')->getInvoicePaginator($values);
 
-  //     $items_per_page = Engine_Api::_()->getApi('settings', 'core')->blog_page;
-  //     $paginator->setItemCountPerPage($items_per_page);
+    $items_per_page = Engine_Api::_()->getApi('settings', 'core')->getSetting('invoice.page', 10);
+    $paginator->setItemCountPerPage($items_per_page);
 
-  //     $this->view->paginator = $paginator->setCurrentPageNumber( $values['page'] );
+    $this->view->paginator = $paginator->setCurrentPageNumber($this->_getParam('page'));
 
-  //     if( !empty($values['category']) ) {
-  //         $this->view->categoryObject = Engine_Api::_()->getDbtable('categories', 'blog')
-  //             ->find($values['category'])->current();
-  //     }
+    // if( !empty($values['category']) ) {
+    //     $this->view->categoryObject = Engine_Api::_()->getDbtable('categories', 'blog')
+    //         ->find($values['category'])->current();
+    // }
 
-  //     // Render
-  //     $this->_helper->content
-  //         //->setNoRender()
-  //         ->setEnabled()
-  //     ;
-  // }
+    // // Render
+    // $this->_helper->content
+    //     //->setNoRender()
+    //     ->setEnabled()
+    // ;
+  }
 
   // public function viewAction()
   // {
@@ -226,10 +214,7 @@ class Invoice_IndexController extends Core_Controller_Action_Standard
 
     // $this->view->parent_type = $parent_type;
     // Prepare form
-    $this->view->form = $form = new Invoice_Form_Create(array(
-      // 'parent_type' => $parent_type,
-      // 'parent_id' => $parent_id
-    ));
+    $this->view->form = $form = new Invoice_Form_Create();
 
 
 
@@ -248,56 +233,76 @@ class Invoice_IndexController extends Core_Controller_Action_Standard
     $values = $form->getValues();
 
 
+    //email validation
+    if (!filter_var($values['cust_email'], FILTER_VALIDATE_EMAIL)) {
+      return $form->addError('Please enter a valid email');
+    }
 
+    //phone number validation
+    if (empty($values['cust_contact'])) {
+      return $form->addError('Please enter a valid number');
+    } else {
+      $number = $values['cust_number'];
+      if (preg_match('/^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}$/', $number)) {
+        return $form->addError('Please enter a valid number');
+      }
+    }
 
-
-
-
-
-
-
-
-    // if (empty($values['cust_contact'])) {
-    //   return $form->addError('Please enter a valid number');
-    // } else {
-    //   $number = $values['cust_number'];
-    //   if (preg_match('/^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}$/', $number)) {
-    //     return $form->addError('Please enter a valid number');
-    //   }
-    // }
-
+    //product validation
     if (empty($values['product_id'])) {
       return $form->addError('Please select a product');
     }
 
-    $product1 = Engine_Api::_()->getItemTable('invoice_product')->getProducts();
-    $products = $product1->fetchAll();
+   
     // echo "<pre>";
     // print_r($products);
     // die;
 
+
+
+
+
     $user = Engine_Api::_()->user()->getViewer();
     // $name = $values['cust_name'];
-     $email = $values['cust_email'];
+    $email = $values['cust_email'];
     // $address = $values['cust_address'];
     // $contact = $values['cust_contact'];
-    // $currency = $values['currency'];
-    // $region = $values['region'];
+    $currency = $values['currency'];
+    $region = $values['region'];
     // $status = $values['status'];
     $category_id = $values['category_id'];
     $prod = $values['product_id'];
-    print_r($category_id);
-    //die;
-    $invoice_number = $this->createInvoiceNumber($category_id);
-    // print_r($invoice_number);
-    // die;
-    $amount=0;
+
+
+    $product1 = Engine_Api::_()->getItemTable('invoice_product')-> getProductsWithCategory($category_id);
+    $products = $product1->fetchAll();
+
+
+
+    if (empty($values['discount'])) {
+      $discount = 0;
+    } else {
+      $discount = $values['discount'];
+    }
+
+
+
+    $invoice_number = Engine_Api::_()->getItemTable('invoice')->getInvoiceNumber($category_id, $currency);
+    date_default_timezone_set("Asia/Calcutta");
+    $amount = 0;
+    $subtotal=0;
     //process for purchases entry
     $table2 = Engine_Api::_()->getItemTable('invoice_purchase');
     $db2 = $table2->getAdapter();
     $db2->beginTransaction();
 
+    // Process for invoice entry
+    $table = Engine_Api::_()->getItemTable('invoice');
+    $db = $table->getAdapter();
+    $db->beginTransaction();
+
     try {
+
       foreach ($prod as $key => $val) {
         //print_r($val);
         foreach ($products as $first => $second) {
@@ -310,105 +315,112 @@ class Invoice_IndexController extends Core_Controller_Action_Standard
             $row->product_name = $second['product_name'];
             $row->purchase_date = date('Y-m-d H:i:s');
             $row->product_price = $second['product_price'];
-            $amount=$amount + $second['product_price'];
+            $amount = $amount + (int)$second['product_price'];
             $row->save();
             $db2->commit();
           }
         }
       }
-    } catch (Exception $e) {
-      return $this->exceptionWrapper($e, $form, $db2);
-    }
 
-    // Process for invoice entry
-    $table = Engine_Api::_()->getItemTable('invoice');
-    $db = $table->getAdapter();
-    $db->beginTransaction();
 
-    // try {
-      // Transaction
-      //$table = Engine_Api::_()->getDbtable('invoices', 'invoice');
 
+        if ($values['currency'] == 0) {
+          $region = 3;
+          $subtotal = $this->totalAmount($region, $amount, $discount);
+        } else {
+          $subtotal = $this->totalAmount($region, $amount, $discount);
+        }
+
+
+
+
+      //Transaction
       // insert the invoice entry into the database
-      $row = $table->createRow();print_r('1-');
-      $row->owner_id   =  $user->getIdentity();print_r('2-');
-      $row->owner_type = $user->getType();print_r('3-');
-      $row->category_id = $category_id;print_r('4-');
-      $row->creation_date = date('Y-m-d H:i:s');print_r('5-');
-      $row->modified_date   = date('Y-m-d H:i:s');print_r('6-');
-
-      $row->cust_name = $values['cust_name'];print_r('7-');
-      $row->cust_email = $values['cust_email'];print_r('8-');
-      $row->cust_address = $values['cust_address'];print_r('9-');
-      $row->cust_contact = $values['cust_contact'];print_r('10-');
-      $row->currency = $values['currency'];print_r('11-');
-      $row->region = $values['region'];print_r('12-');
-      $row->status = $values['status'];print_r('13-');
-      $category_id = $values['category_id'];print_r('14-');
-      $row->invoice_number = $invoice_number;print_r('16-');
-
-
-
-
-
-
+      $row = $table->createRow();
+      $row->owner_id   =  $user->getIdentity();
+      $row->owner_type = $user->getType();
+      $row->category_id = $category_id;
+      $row->creation_date = date('Y-m-d H:i:s');
+      $row->modified_date   = date('Y-m-d H:i:s');
+      $row->cust_name = $values['cust_name'];
+      $row->cust_email = $values['cust_email'];
+      $row->cust_address = $values['cust_address'];
+      $row->cust_contact = $values['cust_contact'];
+      $row->currency = $values['currency'];
+      $row->region = $region;
+      $row->status = $values['status'];
+      $category_id = $values['category_id'];
+      $row->invoice_number = $invoice_number;
+      $row->discount = $discount;
+      $row->amount = $amount;
+      $row->subtotal=$subtotal;
       $row->save();
 
 
       $db->commit();
-    // } catch (Exception $e) {
-    //   return $this->exceptionWrapper($e, $form, $db);
-    // }
+    } catch (Exception $e) {
+      $db2->rollBack();
+      $db->rollBack();
+      throw $e;
+      return $this->exceptionWrapper($e, $form, $db);
+    }
 
     //return $this->_helper->redirector->gotoRoute(array('action' => 'manage'));
   }
 
-  public function createInvoiceNumber($category_id)
+
+  // function to get total amount on the bases of region and discount
+  public function totalAmount($region, $amount, $discount)
   {
+    //for Haryana 
+    if ($region == 0) {
+      $conversionRate = Engine_Api::_()->getApi('settings', 'core')->getSetting('invoice.USDtoINR', 75);
+      $amount = $amount * $conversionRate;
+      $CGST = Engine_Api::_()->getApi('settings', 'core')->getSetting('invoice.CGST', 9);
+      $SGST = Engine_Api::_()->getApi('settings', 'core')->getSetting('invoice.SGST', 9);
 
-    $categoryArray = Engine_Api::_()->getItemTable('invoice_category')->getCategoriesAssoc();
-    $category = $categoryArray[$category_id];
+      $discount = $amount * $discount / 100;
+      $amount = $amount - $discount;
 
+      $SGST = $amount * $SGST / 100;
+      $CGST = $amount * $CGST / 100;
 
-    $invoice = Engine_Api::_()->getItemTable('invoice')->getLastInvoiceId($category_id);
-    $invoice_number = $invoice->fetch();
-    //print_r($invoice_number);
-    if( $invoice_number==''){
-    $num = 1;
-    $num = str_pad($num, 4, '0', STR_PAD_LEFT);
+      $amount = $amount + $SGST + $CGST;
+    } else if ($region == 1) {
+      //for Out side of Haryana 
+      $conversionRate = Engine_Api::_()->getApi('settings', 'core')->getSetting('invoice.USDtoINR', 75);
+      $amount = $amount * $conversionRate;
+      $IGST = Engine_Api::_()->getApi('settings', 'core')->getSetting('invoice.IGST', 18);
+      $discount = $amount * $discount / 100;
+      $amount = $amount - $discount;
 
-    $month = date('m');
-    $firstYear = date('y');
-    $secondYear = date('y');
-    if ($month >= 4) {
-      $secondYear = $secondYear + 1;
+      $IGST = $amount * $IGST / 100;
+
+      $amount = $amount + $IGST;
     } else {
-      $firstYear = $firstYear - 1;
+      //for USD
+      $discount = $amount * $discount / 100;
+      $amount = $amount - $discount;
     }
-
-    return $num . "/" . $category . "/" . $firstYear . "-" . $secondYear;
-    }
-    else{
-    $value = explode('/', $invoice_number['invoice_number']);
-
-    $num = $value[0];
-    print_r($num);
-    $num = (int)$num;
-    $num++;
-    $num = str_pad($num, 4, '0', STR_PAD_LEFT);
-
-    $month = date('m');
-    $firstYear = date('y');
-    $secondYear = date('y');
-    if ($month >= 4) {
-      $secondYear = $secondYear + 1;
-    } else {
-      $firstYear = $firstYear - 1;
-    }
-
-    return $num . "/" . $category . "/" . $firstYear . "-" . $secondYear;
-    }
+    return $amount;
   }
+
+
+
+
+
+  // public function currencyConverter($amount){
+
+  // $fromCurrency = urlencode('USD');
+  // $toCurrency = urlencode('INR');	
+  // $url  = "https://www.google.com/search?q=".$fromCurrency."+to+".$toCurrency;
+  // $get = file_get_contents($url);
+  // $data = preg_split('/\D\s(.*?)\s=\s/',$get);
+  // $exhangeRate = (float) substr($data[1],0,7);
+  // $convertedAmount = $amount*$exhangeRate;
+  // return $convertedAmount;
+
+  // }  
 
 
   // action for ajax request
@@ -429,206 +441,247 @@ class Invoice_IndexController extends Core_Controller_Action_Standard
     $this->_helper->json($data);
   }
 
-  // public function editAction()
-  // {
-  //     if( !$this->_helper->requireUser()->isValid() ) return;
+  public function editAction()
+  {
+      if( !$this->_helper->requireUser()->isValid() ) return;
 
-  //     $viewer = Engine_Api::_()->user()->getViewer();
-  //     $blog = Engine_Api::_()->getItem('blog', $this->_getParam('blog_id'));
-  //     if( !Engine_Api::_()->core()->hasSubject('blog') ) {
-  //         Engine_Api::_()->core()->setSubject($blog);
-  //     }
-
-  //     if( !$this->_helper->requireSubject()->isValid() ) return;
-
-  //     // Get navigation
-  //     $this->view->navigation = $navigation = Engine_Api::_()->getApi('menus', 'core')
-  //         ->getNavigation('blog_main');
-
-  //     $parent_type = $blog->parent_type;
-  //     $parent_id = $blog->parent_id;
-
-  //     if( !$this->_helper->requireAuth()->setAuthParams($blog, $viewer, 'edit')->isValid() ) {
-  //         return;
-  //     }
-
-  //     // Prepare form
-  //     $this->view->form = $form = new Blog_Form_Edit(array(
-  //         'parent_type' => $parent_type,
-  //         'parent_id' => $parent_id
-  //     ));
-
-  //     // Populate form
-  //     $form->populate($blog->toArray());
-
-  //     $tagStr = '';
-  //     foreach( $blog->tags()->getTagMaps() as $tagMap ) {
-  //         $tag = $tagMap->getTag();
-  //         if( !isset($tag->text) ) continue;
-  //         if( '' !== $tagStr ) $tagStr .= ', ';
-  //         $tagStr .= $tag->text;
-  //     }
-
-  //     $form->populate(array(
-  //         'tags' => $tagStr,
-  //         'networks' => explode(',', $blog->networks),
-  //     ));
-  //     $this->view->tagNamePrepared = $tagStr;
-
-  //     $auth = Engine_Api::_()->authorization()->context;
-  //     if( $parent_type == 'group' ) {
-  //         $roles = array('owner', 'member', 'parent_member', 'registered', 'everyone');
-  //     } else {
-  //         $roles = array('owner', 'member', 'owner_member', 'owner_member_member', 'owner_network', 'registered', 'everyone');
-  //     }
-
-  //     foreach( $roles as $role ) {
-  //         if ($form->auth_view){
-  //             if( $auth->isAllowed($blog, $role, 'view') ) {
-  //                 $form->auth_view->setValue($role);
-  //             }
-  //         }
-
-  //         if ($form->auth_comment){
-  //             if( $auth->isAllowed($blog, $role, 'comment') ) {
-  //                 $form->auth_comment->setValue($role);
-  //             }
-  //         }
-  //     }
-
-  //     // hide status change if it has been already published
-  //     if( $blog->draft == "0" ) {
-  //         $form->removeElement('draft');
-  //     }
+      $viewer = Engine_Api::_()->user()->getViewer();
+      $invoice = Engine_Api::_()->getItem('invoice', $this->_getParam('invoice_id'));
 
 
-  //     // Check post/form
-  //     if( !$this->getRequest()->isPost() ) {
-  //         return;
-  //     }
-  //     if( !$form->isValid($this->getRequest()->getPost()) ) {
-  //         return;
-  //     }
+      $purch = Engine_Api::_()->getItemTable('invoice_purchase')->getPurchases($invoice['invoice_number']);
+      $purchases=$purch->fetchAll();
+
+      $data = array();
+      foreach( $purchases as $purchase ) {
+        $data[$purchase['product_id']] = $purchase['product_name'];
+      }
 
 
-  //     // Process
-  //     $db = Engine_Db_Table::getDefaultAdapter();
-  //     $db->beginTransaction();
+      $add=Engine_Api::_()->getItemTable('invoice_product')
+      ->getProductsWithCategory($invoice['category_id']);
 
-  //     try {
-  //         $values = $form->getValues();
+      $addProducts=$add->fetchAll();
 
-  //         if (isset($values['networks'])) {
-  //             $network_privacy = 'network_'. implode(',network_', $values['networks']);
-  //             $values['networks'] = implode(',', $values['networks']);
-  //         }
+      $data2 = array();
+      foreach( $addProducts as $pro ) {
+        $data2[$pro['product_id']] = $pro['product_name'];
+      }
 
-  //         if( empty($values['auth_view']) ) {
-  //             $values['auth_view'] = 'everyone';
-  //         }
-  //         if( empty($values['auth_comment']) ) {
-  //             $values['auth_comment'] = 'everyone';
-  //         }
+      // print_r($addProducts);
+      // die;
 
-  //         $values['view_privacy'] = $values['auth_view'];
 
-  //         $blog->setFromArray($values);
-  //         $blog->modified_date = date('Y-m-d H:i:s');
-  //         $blog->save();
+      // Get navigation
+      $this->view->navigation = $navigation = Engine_Api::_()->getApi('menus', 'core')
+          ->getNavigation('invoice_main');
 
-  //         // Add photo
-  //         if( !empty($values['photo']) ) {
-  //             $blog->setPhoto($form->photo);
-  //         }
+        //  print_r($data);
+        //  die;
 
-  //         // Auth
-  //         $viewMax = array_search($values['auth_view'], $roles);
-  //         $commentMax = array_search($values['auth_comment'], $roles);
+      // if( !$this->_helper->requireAuth()->setAuthParams($invoice, $viewer, 'edit')->isValid() ) {
+      //     return;
+      // }
 
-  //         foreach( $roles as $i => $role ) {
-  //             $auth->setAllowed($blog, $role, 'view', ($i <= $viewMax));
-  //             $auth->setAllowed($blog, $role, 'comment', ($i <= $commentMax));
-  //         }
+      // Prepare form
+      $this->view->form = $form = new Invoice_Form_Edit();
 
-  //         // handle tags
-  //         $tags = preg_split('/[,]+/', $values['tags']);
-  //         $blog->tags()->setTagMaps($viewer, $tags);
+      //Populate form
+      
 
-  //         // insert new activity if blog is just getting published
-  //         $action = Engine_Api::_()->getDbtable('actions', 'activity')->getActionsByObject($blog);
-  //         if( count($action->toArray()) <= 0 && $values['draft'] == '0' ) {
-  //             $action = Engine_Api::_()->getDbtable('actions', 'activity')->addActivity($viewer, $blog, 'blog_new', '', array('privacy' => isset($values['networks'])? $network_privacy : null));
-  //             // make sure action exists before attaching the blog to the activity
-  //             if( $action != null ) {
-  //                 Engine_Api::_()->getDbtable('actions', 'activity')->attachActivity($action, $blog);
-  //             }
-  //         }
+      $this->view->currency=$invoice['currency'];
+      $this->view->products=$data;
+      $this->view->addProducts=$data2;
 
-  //         // Rebuild privacy
-  //         $actionTable = Engine_Api::_()->getDbtable('actions', 'activity');
-  //         foreach( $actionTable->getActionsByObject($blog) as $action ) {
-  //             $action->privacy = isset($values['networks'])? $network_privacy : null;
-  //             $action->save();
-  //             $actionTable->resetActivityBindings($action);
-  //         }
 
-  //         // Send notifications for subscribers
-  //         Engine_Api::_()->getDbtable('subscriptions', 'blog')
-  //             ->sendNotifications($blog);
 
-  //         $db->commit();
+      $form->populate($invoice->toArray());
 
-  //     }
-  //     catch( Exception $e ) {
-  //         $db->rollBack();
-  //         throw $e;
-  //     }
+     
 
-  //     return $this->_helper->redirector->gotoRoute(array('action' => 'manage'));
-  // }
+    
+       
+     
+     
 
-  // public function deleteAction()
-  // {
-  //     $viewer = Engine_Api::_()->user()->getViewer();
-  //     $blog = Engine_Api::_()->getItem('blog', $this->getRequest()->getParam('blog_id'));
-  //     if( !$this->_helper->requireAuth()->setAuthParams($blog, null, 'delete')->isValid()) return;
 
-  //     // In smoothbox
-  //     $this->_helper->layout->setLayout('default-simple');
 
-  //     $this->view->form = $form = new Blog_Form_Delete();
+      // Check post/form
+      if( !$this->getRequest()->isPost() ) {
+          return;
+      }
+      if( !$form->isValid($this->getRequest()->getPost()) ) {
+          return;
+      }
+      date_default_timezone_set("Asia/Calcutta");
 
-  //     if( !$blog ) {
-  //         $this->view->status = false;
-  //         $this->view->error = Zend_Registry::get('Zend_Translate')->_("Blog entry doesn't exist or not authorized to delete");
-  //         return;
-  //     }
+    $table2 = Engine_Api::_()->getItemTable('invoice_purchase');
+    $db2 = $table2->getAdapter();
+    $db2->beginTransaction();
 
-  //     if( !$this->getRequest()->isPost() ) {
-  //         $this->view->status = false;
-  //         $this->view->error = Zend_Registry::get('Zend_Translate')->_('Invalid request method');
-  //         return;
-  //     }
 
-  //     $db = $blog->getTable()->getAdapter();
-  //     $db->beginTransaction();
+      // Process
+      $db = Engine_Db_Table::getDefaultAdapter();
+      $db->beginTransaction();
 
-  //     try {
-  //         $blog->delete();
+      try {
+          $values = $form->getValues();
+          
+          $amount=$invoice['amount'];
+          $invoice_number=$invoice['invoice_number'];
+          
+          
+          $email=$values['cust_email'];
+          
+          $discount=$values['discount'];
+          $region= $values['region'];
 
-  //         $db->commit();
-  //     } catch( Exception $e ) {
-  //         $db->rollBack();
-  //         throw $e;
-  //     }
 
-  //     $this->view->status = true;
-  //     $this->view->message = Zend_Registry::get('Zend_Translate')->_('Your blog entry has been deleted.');
-  //     return $this->_forward('success' ,'utility', 'core', array(
-  //         'parentRedirect' => Zend_Controller_Front::getInstance()->getRouter()->assemble(array('action' => 'manage'), 'blog_general', true),
-  //         'messages' => Array($this->view->message)
-  //     ));
-  // }
+        if(!empty($values['product_id'])){
+        $prod = $values['product_id'];
+
+          foreach ($prod as $key => $val) {
+            //print_r($val);
+            foreach ($purchases as $first => $second) {
+              if ($val == $second['product_id']) {
+                //print_r($second['product_id']);
+               
+                $amount = $amount - (int)$second['product_price'];
+                // print_r($amount);
+                // die;
+                $table2->delete(array(
+                  'invoice_number = ?' => $invoice_number,
+                  'product_id = ?' => $second['product_id'],
+                ));
+               
+               // $db2->commit();
+              }
+            }
+          }
+        }
+         
+
+          if(!empty($values['product_id1'])){
+          $prod=$values['product_id1'];
+          foreach ($prod as $key => $val) {
+            //print_r($val);
+            foreach ($addProducts as $first => $second) {
+              if ($val == $second['product_id']) {
+                //print_r($second['product_id']);
+                $row = $table2->createRow();
+                $row->product_id = $second['product_id'];
+                $row->invoice_number = $invoice_number;
+                $row->cust_email = $email;
+                $row->product_name = $second['product_name'];
+                $row->purchase_date = $invoice['creation_date'];
+                $row->product_price = $second['product_price'];
+                $amount = $amount + (int)$second['product_price'];
+                $row->save();
+                $db2->commit();
+              }
+            }
+          }
+        }
+
+         $subtotal=0;
+          if ($values['currency'] == 0) {
+            $region = 3;
+            $subtotal = $this->totalAmount($region, $amount, $discount);
+          } else {
+            $subtotal = $this->totalAmount($region, $amount, $discount);
+          }
+
+          
+
+         
+
+         
+
+          $invoice->setFromArray($values);
+          $invoice->modified_date = date('Y-m-d H:i:s');
+          $invoice->amount=$amount;
+          $invoice->subtotal=$subtotal;
+          $invoice->save(); 
+
+          $db->commit();
+
+      }
+      catch( Exception $e ) {
+          $db2->rollBack();
+          $db->rollBack();
+          throw $e;
+      }
+
+      return $this->_helper->redirector->gotoRoute(array('action' => 'index'));
+  }
+
+
+
+
+  public function deleteAction()
+  {
+      $viewer = Engine_Api::_()->user()->getViewer();
+      $invoice = Engine_Api::_()->getItem('invoice', $this->getRequest()->getParam('invoice_id'));
+      //if( !$this->_helper->requireAuth()->setAuthParams($blog, null, 'delete')->isValid()) return;
+
+      // In smoothbox
+      $this->_helper->layout->setLayout('default-simple');
+
+      $this->view->form = $form = new Invoice_Form_Delete();
+    
+      if( !$invoice ) {
+          $this->view->status = false;
+          $this->view->error = Zend_Registry::get('Zend_Translate')->_("Invoice entry doesn't exist or not authorized to delete");
+          return;
+      }
+     
+
+
+      if( !$this->getRequest()->isPost() ) {
+          $this->view->status = false;
+          $this->view->error = Zend_Registry::get('Zend_Translate')->_('Invalid request method');
+          return;
+      }
+      
+     
+      $invoice_number=$invoice['invoice_number'];
+      
+      // print_r($invoice_number);
+      // die;
+      
+      
+
+    
+    $table = Engine_Api::_()->getDbtable('purchases', 'invoice');
+    $db = $invoice->getTable()->getAdapter();
+    $db->beginTransaction();
+    $db2 =$table->getAdapter();
+    $db2->beginTransaction();
+
+    try {
+      // first delete all purchases,
+      $table->delete(array(
+        'invoice_number = ?' => $invoice_number,
+      ));
+      $invoice->delete();
+
+      $db2->commit();
+        $db->commit();
+    } catch( Exception $e ) {
+      //die('yo');
+      $db2->rollBack();
+        $db->rollBack();
+        throw $e;
+    }
+
+      $this->view->status = true;
+      $this->view->message = Zend_Registry::get('Zend_Translate')->_('Your invoice entry has been deleted.');
+      return $this->_forward('success' ,'utility', 'core', array(
+          'parentRedirect' => Zend_Controller_Front::getInstance()->getRouter()
+          ->assemble(array('action' => 'index'), 'invoice_general', true),
+          'messages' => Array($this->view->message)
+      ));
+  }
 
 
 }

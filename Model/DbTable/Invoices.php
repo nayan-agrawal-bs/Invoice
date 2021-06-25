@@ -54,9 +54,9 @@ class Invoice_Model_DbTable_Invoices extends Core_Model_Item_DbTable_Abstract
             $select->where($rName . '.owner_id = ?', $params['owner']);
         }
 
-        if (!Engine_Api::_()->getApi('settings', 'core')->getSetting('demo.allow.unauthorized', 0))
-            return $this->getAuthorisedSelect($select);
-        else
+        // if (!Engine_Api::_()->getApi('settings', 'core')->getSetting('demo.allow.unauthorized', 0))
+        //     return $this->getAuthorisedSelect($select);
+        // else
             return $select;
     }
 
@@ -88,24 +88,113 @@ class Invoice_Model_DbTable_Invoices extends Core_Model_Item_DbTable_Abstract
     }
 
 
-    public function getLastInvoiceId($categoryId)
+    public function getInvoiceNumber($category_id,$currnecy)
     {
+        $categoryArray = Engine_Api::_()->getItemTable('invoice_category')->getCategoriesAssoc();
+        $category = $categoryArray[$category_id];
+
+
         $stmt = $this->select()
             ->from($this, array('Max(invoice_id) as id'))
-            ->where('category_id = ?', $categoryId)
+            ->where('category_id = ?', $category_id)
             ->order('invoice_id')
             ->query();
 
         $id = $stmt->fetch();
+        
+        if (empty($id['id'])&& $currnecy == 0) {
+            $num = 1;
+            $num = str_pad($num, 4, '0', STR_PAD_LEFT);
 
-        $stmt = $this->select()->from($this, array('invoice_number'))
-            ->where('invoice_id = ?', $id['id'])
-            ->query();
+            $month = date('m');
+            $firstYear = date('y');
+            $secondYear = date('y');
+            if ($month >= 4) {
+                $secondYear = $secondYear + 1;
+            } else {
+                $firstYear = $firstYear - 1;
+            }
+
+            return $num . "/" ."P". $category . "/" . $firstYear . "-" . $secondYear;
+
+        } else  if (empty($id['id'])&& $currnecy == 1) {
+            $num = 1;
+            $num = str_pad($num, 4, '0', STR_PAD_LEFT);
+
+            $month = date('m');
+            $firstYear = date('y');
+            $secondYear = date('y');
+            if ($month >= 4) {
+                $secondYear = $secondYear + 1;
+            } else {
+                $firstYear = $firstYear - 1;
+            }
+
+            return $num . "/" ."GST". $category . "/" . $firstYear . "-" . $secondYear;
+
+        } else if ($currnecy ==0) {
+
+
+            $stmt = $this->select()->from($this, array('invoice_number'))
+                ->where('invoice_id = ?', $id['id'])
+                ->query();
+
+
+            $invoice_number = $stmt->fetch();
+            //print_r($invoice_number);
 
 
 
+            $value = explode('/', $invoice_number['invoice_number']);
+
+            $num = $value[0];
+            //print_r($num);
+            $num = (int)$num;
+            $num++;
+            $num = str_pad($num, 4, '0', STR_PAD_LEFT);
+
+            $month = date('m');
+            $firstYear = date('y');
+            $secondYear = date('y');
+            if ($month >= 4) {
+                $secondYear = $secondYear + 1;
+            } else {
+                $firstYear = $firstYear - 1;
+            }
+
+            return $num . "/" ."P". $category . "/" . $firstYear . "-" . $secondYear;
+        }
+        else {
 
 
-        return $stmt;
+            $stmt = $this->select()->from($this, array('invoice_number'))
+                ->where('invoice_id = ?', $id['id'])
+                ->query();
+
+
+            $invoice_number = $stmt->fetch();
+            //print_r($invoice_number);
+
+
+
+            $value = explode('/', $invoice_number['invoice_number']);
+
+            $num = $value[0];
+            //print_r($num);
+            $num = (int)$num;
+            $num++;
+            $num = str_pad($num, 4, '0', STR_PAD_LEFT);
+
+            $month = date('m');
+            $firstYear = date('y');
+            $secondYear = date('y');
+            if ($month >= 4) {
+                $secondYear = $secondYear + 1;
+            } else {
+                $firstYear = $firstYear - 1;
+            }
+
+            return $num . "/" ."GST". $category . "/" . $firstYear . "-" . $secondYear;
+        }
     }
 }

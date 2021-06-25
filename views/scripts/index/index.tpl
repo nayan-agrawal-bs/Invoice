@@ -1,76 +1,107 @@
-<?php
-/**
- * SocialEngine
- *
- * @category   Application_Extensions
- * @package    Blog
- * @copyright  Copyright 2006-2020 Webligo Developments
- * @license    http://www.socialengine.com/license/
- * @version    $Id: index.tpl 9747 2012-07-26 02:08:08Z john $
- * @author     Jung
- */
-?>
 
-<?php if( $this->paginator->getTotalItemCount() > 0 ): ?>
-  <ul class="blogs_browse">
-    <?php foreach( $this->paginator as $item ): ?>
-      <li>
-        <div class='blogs_browse_photo'>
-          <?php echo $this->htmlLink($item->getHref(), $this->itemBackgroundPhoto($item, 'thumb.main')) ?>
-        </div>
-        <div class='blogs_browse_info'>
-          <span class='blogs_browse_info_title'>
-            <h3><?php echo $this->htmlLink($item->getHref(), $item->getTitle()) ?></h3>
-          </span>
-          <p class='blogs_browse_info_date'>
-            <?php echo $this->translate('Posted');?>
-            <?php echo $this->timestamp(strtotime($item->creation_date)) ?>
-            <?php echo $this->translate('by');?>
-            <?php echo $this->htmlLink($item->getOwner()->getHref(), $item->getOwner()->getTitle()) ?>
-          </p>
-          <p class='blogs_browse_info_blurb'>
-            <?php $readMore = ' ' . $this->translate('Read More') . '...';?>
-            <?php echo $this->string()->truncate($this->string()->stripTags($item->body), 110, $this->htmlLink($item->getHref(), $readMore) ) ?>
-          </p>
-          <!-- <div class="stat_info">
-            <?php if( $item->comment_count > 0 ) :?>
-              <span>
-                <i class="fa fa-comment"></i> <?php echo $this->translate(array('%s', '%s', $item->comment_count), $this->locale()->toNumber($item->comment_count)) ?>
-              </span>
-            <?php endif; ?>
-            <?php if( $item->like_count > 0 ) :?>
-              <span>
-                <i class="fa fa-thumbs-up"></i> <?php echo $this->translate(array('%s', '%s', $item->like_count), $this->locale()->toNumber($item->like_count)) ?>
-              </span>
-            <?php endif; ?>
-            <?php if( $item->view_count > 0 ) :?>
-              <span class="views_blog">
-                <i class="fa fa-eye"></i> <?php echo $this->translate(array('%s', '%s', $item->view_count), $this->locale()->toNumber($item->view_count)) ?>
-              </span>
-            <?php endif; ?>
-          </div> -->
-        </div>
-      </li>
+
+<script type="text/javascript">
+
+function multiDelete()
+{
+  return confirm("<?php echo $this->translate('Are you sure you want to delete the selected invpoce entries?');?>");
+}
+
+function selectAll()
+{
+  var i;
+  var multidelete_form = $('multidelete_form');
+  var inputs = multidelete_form.elements;
+  for (i = 1; i < inputs.length; i++) {
+    if (!inputs[i].disabled) {
+      inputs[i].checked = inputs[0].checked;
+    }
+  }
+}
+</script>
+
+<h2>
+  <?php echo $this->translate('Invoice Plugin') ?>
+</h2>
+
+
+
+
+
+	
+<br />	
+<br />
+
+<?php if( count($this->paginator) ): ?>
+<form id='multidelete_form' method="post" action="<?php echo $this->url();?>" onSubmit="return multiDelete()">
+<table class='admin_table'>
+  <thead>
+    <tr>
+      <th class='admin_table_short'><input onclick='selectAll();' type='checkbox' class='checkbox' /></th>
+      <th class='admin_table_short'>ID</th>
+      <th><?php echo $this->translate("Invoice Number") ?></th>
+      <th><?php echo $this->translate("Created By") ?></th>
+      <th><?php echo $this->translate("Customer Name") ?></th>
+      <th><?php echo $this->translate("Date") ?></th>
+      <th><?php echo $this->translate("Amount") ?></th>
+      <th><?php echo $this->translate("Payment Status") ?></th>
+    </tr>
+  </thead>
+  <tbody>
+    <?php foreach ($this->paginator as $item): ?>
+      <tr>
+        <td><input type='checkbox' class='checkbox' name='delete_<?php echo $item->getIdentity(); ?>' value="<?php echo $item->getIdentity(); ?>" /></td>
+        <td><?php echo $item->invoice_id ?></td>
+        <td><?php echo $item->invoice_number ?></td>
+        <td><?php echo $item->getOwner()->getTitle()?></td>
+        <td><?php echo $item->cust_name ?> </td>
+        <td><?php echo $this->locale()->toDateTime($item->creation_date) ?></td>
+        <td><?php echo $item->amount ?></td>
+        <td><?php echo $item->status?></td>
+        <td>
+        <?php echo $this->htmlLink(array(
+              'action' => 'view',
+              'invoice_id' => $item->invoice_id,
+              'route' => 'invoice_specific',
+              // 'reset' => true,
+            ), $this->translate('view'))  ?>
+          |
+          <?php echo $this->htmlLink(array(
+              'action' => 'edit',
+              'invoice_id' => $item->invoice_id,
+              'route' => 'invoice_specific',
+              // 'reset' => true,
+            ), $this->translate('edit')) ?>
+          |
+          <?php echo $this->htmlLink(array(
+                 
+                'action' => 'delete', 
+                'invoice_id' => $item->invoice_id,
+                'route'=>'invoice_specific',
+              ),                
+                $this->translate("delete"),
+                array('class' => 'smoothbox')) ?>
+        </td>
+      </tr>
     <?php endforeach; ?>
-  </ul>
+  </tbody>
+ 
+</table>
 
-<?php elseif( $this->category || $this->show == 2 || $this->search ): ?>
+<br />
+
+<div class='buttons'>
+  <button type='submit'><?php echo $this->translate("Delete Selected") ?></button>
+</div>
+</form>
+
+<br/>
+
+
+<?php else: ?>
   <div class="tip">
     <span>
-      <?php echo $this->translate('Nobody has written a blog entry with that criteria.');?>
-      <?php if (TRUE): // @todo check if user is allowed to create a poll ?>
-        <?php echo $this->translate('Be the first to %1$swrite%2$s one!', '<a href="'.$this->url(array('action' => 'create'), 'blog_general').'">', '</a>'); ?>
-      <?php endif; ?>
-    </span>
-  </div>
-
-<?php else:?>
-  <div class="tip">
-    <span>
-      <?php echo $this->translate('Nobody has written a blog entry yet.'); ?>
-      <?php if( $this->canCreate ): ?>
-        <?php echo $this->translate('Be the first to %1$swrite%2$s one!', '<a href="'.$this->url(array('action' => 'create'), 'blog_general').'">', '</a>'); ?>
-      <?php endif; ?>
+      <?php echo $this->translate("There are no Invoice entries by you yet.") ?>
     </span>
   </div>
 <?php endif; ?>

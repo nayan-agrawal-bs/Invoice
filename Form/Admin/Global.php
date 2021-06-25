@@ -41,6 +41,11 @@ class Invoice_Form_Admin_Global extends Engine_Form
       'value' => Engine_Api::_()->getApi('settings', 'core')->getSetting('invoice.IGST', 18),
     ));
 
+    $this->addElement('Text', 'invoice_USDtoINR', array(
+      'label' => 'USDtoINR',
+      'description' => 'Enter the conversion rate of 1 USD to INR',
+      'value' => Engine_Api::_()->getApi('settings', 'core')->getSetting('invoice.USDtoINR', 75),
+    ));
 
 
 

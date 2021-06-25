@@ -54,7 +54,7 @@ function isUSD(value) {
       scriptJquery('#region-wrapper').show();
     } else {
       scriptJquery('#region-wrapper').hide();
-      scriptJquery('#region').val(3);
+      scriptJquery('#region').val();
     }
   }
 

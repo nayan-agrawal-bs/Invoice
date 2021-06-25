@@ -18,7 +18,7 @@ $this->headScript()
   // en4.core.runonce.add(function()
   // {
   //   new Autocompleter.Request.JSON('tags', '<?php //echo $this->url(array('controller' => 'tag', 'action' => 'suggest'), 'default', true) 
-                                                ?>', {
+                                               // ?>', {
   //     'postVar' : 'text',
   //     'customChoices' : true,
   //     'minLength': 1,

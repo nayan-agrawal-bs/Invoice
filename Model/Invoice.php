@@ -1,8 +1,8 @@
 <?php
 
-class Inoice_Model_Invoice extends Core_Model_Item_Abstract{
+class Invoice_Model_Invoice extends Core_Model_Item_Abstract{
 
-    protected $_parent_type = 'user';
+    protected $_route = 'invoice_general';
 //     // protected $_parent_type = 'user';
 //     public function getHref($params = array())
 //     {

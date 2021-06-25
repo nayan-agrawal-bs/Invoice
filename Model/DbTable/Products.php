@@ -30,6 +30,16 @@ class Invoice_Model_DbTable_Products extends Engine_Db_Table
     return $stmt;
   }
  
+
+  public function getProductsWithCategory($category_id){
+    $stmt = $this->select()
+        ->from($this, array('product_id', 'product_name','product_price','category_id'))
+        ->where('category_id = ?',$category_id)
+        ->order('product_name ASC')
+        ->query();
+
+    return $stmt;
+  }
   
   
   

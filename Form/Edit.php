@@ -1,6 +1,6 @@
 <?php
 
-class Invoice_Form_Create extends Engine_Form
+class Invoice_Form_Edit extends Engine_Form
 {
     // public $_error = array();
 
@@ -20,8 +20,8 @@ class Invoice_Form_Create extends Engine_Form
 
     public function init()
     {
-        $this->setTitle('Write New Entry')
-            ->setDescription('Compose your new  entry below, then click "Post Entry" to publish the entry to your blog.')
+        $this->setTitle('Edit Invoice')
+            ->setDescription('Edit the invoice below, then click "Edit".')
             ->setAttrib('name', 'Invoice_create');
         $user = Engine_Api::_()->user()->getViewer();
         $userLevel = Engine_Api::_()->user()->getViewer()->level_id;
@@ -72,22 +72,21 @@ class Invoice_Form_Create extends Engine_Form
             'autofocus' => 'autofocus',
         ));
 
+        $this->addElement('Select', 'product_id1', array(
+            'label' => 'Add Products',
+            'id' => 'addPro',
+            'multiple' => 'true',
+            'RegisterInArrayValidator' => false,
+                'allowEmpty' => true,
+                'required' => false,
+            // 'style' => 'display:none',
+        ));
 
-
-        // prepare categories
-        $categories = Engine_Api::_()->getDbtable('categories', 'invoice')->getCategoriesAssoc();
-        if (count($categories) > 0) {
-            $this->addElement('Select', 'category_id', array(
-                'id' => 'cate',
-                'label' => 'Category',
-                'multiOptions' => $categories,
-                'onclick' => 'fun(this.value)',
-            ));
-        }
+       
 
 
         $this->addElement('Select', 'product_id', array(
-            'label' => 'Products',
+            'label' => 'Delete Products',
             'id' => 'pro',
             'multiple' => 'true',
             'RegisterInArrayValidator' => false,
@@ -98,21 +97,13 @@ class Invoice_Form_Create extends Engine_Form
 
 
 
-        $this->addElement('Select', 'currency', array(
-            'id' => 'currency',
-            //'decorator'=>'Select the currency',
-            'label' => 'Currency',
-            'multiOptions' => array(
-                '0'=> 'USD',
-                '1'=> 'INR'
-            ),
-            'onchange' => 'isUSD(this.value)',
-        ));
+       
 
 
         $this->addElement('Select', 'region', array(
             'id' => 'region',
             //'decorator'=>'Select the region',
+            'required' => true,
             'label' => 'Region',
             'multiOptions' => array(
                 '0'=> 'Haryana',
@@ -130,6 +121,7 @@ class Invoice_Form_Create extends Engine_Form
 
         $this->addElement('Select', 'status', array(
             'id' => 'status',
+            'required' => true,
             //'decorator'=>'Select the region',
             'label' => 'Status',
             'multiOptions' => array(
@@ -139,12 +131,12 @@ class Invoice_Form_Create extends Engine_Form
         ));
 
         
-
         // Element: submit
         $this->addElement('Button', 'submit', array(
-            'label' => 'Post Entry',
+            'label' => 'Edit',
             'type' => 'submit',
         ));
     }
 
+    
 }
