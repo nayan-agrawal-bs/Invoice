@@ -1,24 +1,42 @@
 
 
-<script type="text/javascript">
 
-function multiDelete()
-{
-  return confirm("<?php echo $this->translate('Are you sure you want to delete the selected invpoce entries?');?>");
+
+
+
+<style type="text/css">
+  #global_wrapper{
+    background-color: #fcfcfc !important;
+    border-top: 1px solid gray;
 }
 
-function selectAll()
-{
-  var i;
-  var multidelete_form = $('multidelete_form');
-  var inputs = multidelete_form.elements;
-  for (i = 1; i < inputs.length; i++) {
-    if (!inputs[i].disabled) {
-      inputs[i].checked = inputs[0].checked;
-    }
-  }
+table{
+    /border: 1px solid black;/
+    width: 100%;
+
+    border-radius: 25px;
 }
-</script>
+
+.table-heading{
+    background-color: #f5f5f5;
+}
+th{
+    font-size: 18px;
+    font
+}
+th,td{
+    padding: 10px;
+    color: black;
+}
+tr:nth-child(even) {
+    background-color: white;
+}
+.item-row{
+    border-bottom: 1px solid #fae1e1;
+}
+
+
+</style>
 
 <h2>
   <?php echo $this->translate('Invoice Plugin') ?>
@@ -33,11 +51,11 @@ function selectAll()
 <br />
 
 <?php if( count($this->paginator) ): ?>
-<form id='multidelete_form' method="post" action="<?php echo $this->url();?>" onSubmit="return multiDelete()">
+
 <table class='admin_table'>
   <thead>
     <tr>
-      <th class='admin_table_short'><input onclick='selectAll();' type='checkbox' class='checkbox' /></th>
+      
       <th class='admin_table_short'>ID</th>
       <th><?php echo $this->translate("Invoice Number") ?></th>
       <th><?php echo $this->translate("Created By") ?></th>
@@ -45,12 +63,13 @@ function selectAll()
       <th><?php echo $this->translate("Date") ?></th>
       <th><?php echo $this->translate("Amount") ?></th>
       <th><?php echo $this->translate("Payment Status") ?></th>
+       <th><?php echo $this->translate("Options") ?></th>
     </tr>
   </thead>
   <tbody>
     <?php foreach ($this->paginator as $item): ?>
       <tr>
-        <td><input type='checkbox' class='checkbox' name='delete_<?php echo $item->getIdentity(); ?>' value="<?php echo $item->getIdentity(); ?>" /></td>
+        
         <td><?php echo $item->invoice_id ?></td>
         <td><?php echo $item->invoice_number ?></td>
         <td><?php echo $item->getOwner()->getTitle()?></td>
@@ -90,10 +109,7 @@ function selectAll()
 
 <br />
 
-<div class='buttons'>
-  <button type='submit'><?php echo $this->translate("Delete Selected") ?></button>
-</div>
-</form>
+
 
 <br/>
 

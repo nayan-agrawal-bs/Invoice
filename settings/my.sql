@@ -27,7 +27,8 @@ CREATE TABLE `engine4_invoice_invoices` (
   `category_id` int NOT NULL,
   `discount` int NOT NULL DEFAULT '0',
   `status` int NOT NULL,
-  `amount` int NOT NULL
+  `amount` int NOT NULL,
+  `subtotal` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci;
 
 

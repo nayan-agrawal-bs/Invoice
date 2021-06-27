@@ -80,6 +80,8 @@ class Invoice_Form_Create extends Engine_Form
             $this->addElement('Select', 'category_id', array(
                 'id' => 'cate',
                 'label' => 'Category',
+                'allowEmpty' => false,
+            'required' => true,
                 'multiOptions' => $categories,
                 'onclick' => 'fun(this.value)',
             ));
@@ -90,6 +92,8 @@ class Invoice_Form_Create extends Engine_Form
             'label' => 'Products',
             'id' => 'pro',
             'multiple' => 'true',
+            'allowEmpty' => false,
+            'required' => true,
             'RegisterInArrayValidator' => false,
                 'allowEmpty' => true,
                 'required' => false,
@@ -100,6 +104,8 @@ class Invoice_Form_Create extends Engine_Form
 
         $this->addElement('Select', 'currency', array(
             'id' => 'currency',
+            'allowEmpty' => false,
+            'required' => true,
             //'decorator'=>'Select the currency',
             'label' => 'Currency',
             'multiOptions' => array(
@@ -129,6 +135,8 @@ class Invoice_Form_Create extends Engine_Form
         ));
 
         $this->addElement('Select', 'status', array(
+            'allowEmpty' => false,
+            'required' => true,
             'id' => 'status',
             //'decorator'=>'Select the region',
             'label' => 'Status',

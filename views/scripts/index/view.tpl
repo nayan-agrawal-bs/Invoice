@@ -1,65 +1,130 @@
 <?php
-/**
- * SocialEngine
- *
- * @category   Application_Extensions
- * @package    Blog
- * @copyright  Copyright 2006-2020 Webligo Developments
- * @license    http://www.socialengine.com/license/
- * @author     Jung
- */
+
+	$invoice = $this->invoice;
+	$products = $this->products;
+
+
+	$cnt = 1;
 ?>
 
+<style>
 
-<h2>
-  <?php if($this->blog->getParentItem()): ?>
-    <?php echo $this->blog->getParentItem()->__toString(); ?>
-    <?php echo $this->translate('&#187;'); ?>
-  <?php else: ?>
-    <?php echo $this->htmlLink(array('route' => 'blog_general'), "Blogs", array()); ?>
-    <?php echo $this->translate('&#187;'); ?>
-  <?php endif; ?>
-  <?php if($category = $this->blog->getCategoryItem()): ?>
-    <?php echo $this->htmlLink($category->getHref(),$category->category_name, array()); ?>
-    <?php echo $this->translate('&#187;'); ?>
-  <?php endif; ?>
-  <?php echo $this->blog->getTitle(); ?>
-</h2>
+@import url(https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css);
+/*<link href="" rel="stylesheet">*/
 
-<h2>
-  <?php echo $this->blog->getTitle() ?>
-</h2>
-<ul class='blogs_entrylist'>
-  <li>
-    <div class="blog_entrylist_entry_date">
-      <?php echo $this->translate('Posted by');?> <?php echo $this->htmlLink($this->owner->getHref(), $this->owner->getTitle()) ?>
-      <?php echo $this->timestamp($this->blog->creation_date) ?>
-      <?php if( $this->category ): ?>
-      -
-      <?php echo $this->translate('Filed in') ?>
-      <a href='javascript:void(0);' onclick='javascript:categoryAction(<?php echo $this->category->category_id?>);'><?php echo $this->translate($this->category->category_name) ?></a>
-      <?php endif; ?>
-      <?php if (count($this->blogTags )):?>
-      -
-      <?php foreach ($this->blogTags as $tag): ?>
-      <a href='javascript:void(0);' onclick='javascript:tagAction(<?php echo $tag->getTag()->tag_id; ?>);'>#<?php echo $tag->getTag()->text?></a>&nbsp;
-      <?php endforeach; ?>
-      <?php endif; ?>
-      -
-      <?php echo $this->translate(array('%s view', '%s views', $this->blog->view_count), $this->locale()->toNumber($this->blog->view_count)) ?>
-    </div>
-    <div class="blog_entrylist_entry_body rich_content_body">
-      <?php echo Engine_Api::_()->core()->smileyToEmoticons($this->blog->body); ?>
-    </div>
-  </li>
-</ul>
-<script type="text/javascript">
-    en4.core.runonce.add(function() {
-      // Enable links
-      $$('.blog_entrylist_entry_body').enableLinks();
-    });
-</script>
+#global_wrapper{
+	background-color: #fcfcfc !important;
+	border-top: 1px solid gray;
+}
+</style>
 
-<script type="text/javascript">
-    $$('.core_main_blog').getParent().addClass('active');
-</script>
+
+
+<div class="container ">
+	<header>
+
+		<!--show header with image -->
+
+	</header>
+
+
+	<div class="content">
+
+		<h3 class="text-lg text-center">Invoice</h1>
+
+
+			<div class="grid grid-cols-4 grid-flow-col gap-4">
+
+				<div class="col-span-3">
+					<p>Customer Name:<?=$invoice['cust_name']?></p>
+					<p>Address:<?=$invoice['cust_address']?></p>
+					<p>Contact No:<?=$invoice['cust_contact']?></p>
+					<p>Email:<?=$invoice['cust_email']?></p>
+					
+				</div>
+
+				<div class="col-span-1">
+          <p>Invoice Number:<?=$invoice['invoice_number']?></p>
+					<p>Date: <?=$invoice['creation_date']?></p>
+
+				</div>
+
+			</div>
+
+
+			<div class="proudcts-table w-10/12">
+				<table class="w-10/12 border-2 table-fixed">
+					<thead class="border-2">
+						<tr>
+							<th class="border-2 p-1">S NO.</th>
+							<th class="border-2 p-1">Product Name</th>
+							<th class="border-2 p-1">Amount</th>
+						</tr>
+
+					</thead>
+
+					<tbody class="border-2">
+
+						<?php foreach($products as $key => $value): ?>
+
+						<tr class="border-2 p-4">
+							<td class="border-2 p-1"><?=$key?></td>
+							<td class="border-2 p-1"><?=$value['product_name']?></td>
+							<td class="border-2 p-1"><?=$value['product_price']?></td>
+						</tr>
+
+
+						<?php endforeach; ?>
+
+						<tr>
+							<td></td>
+
+							<td class="border-2 p-1">Discount
+							</td>
+							<td class="border-2 p-1">
+								<?=$invoice['discount']?>
+							</td>
+						</tr>
+						<?php if($invoice['currency']): ?>
+						<?php if($invoice['region']): ?>
+						<tr>
+							<td></td>
+							
+						</tr>
+						
+						<?php else: ?>
+						<tr>
+							<td></td>
+							
+						</tr>
+						<tr>
+							<td></td>
+						
+						</tr>
+
+						<?php endif; ?>
+
+						<?php endif; ?>
+
+
+
+						<tr>
+							<td></td>
+							<td class="border-2 p-1">Total</td>
+							<td class="border-2 p-1"><?=$invoice['subtotal']?></td>
+						</tr>
+					</tbody>
+				</table>
+
+
+			</div>
+
+
+
+		</div>
+
+
+
+
+	</div>
+

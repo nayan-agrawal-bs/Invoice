@@ -62,86 +62,52 @@ class Invoice_IndexController extends Core_Controller_Action_Standard
     // ;
   }
 
-  // public function viewAction()
-  // {
-  //     // Check permission
-  //     $viewer = Engine_Api::_()->user()->getViewer();
-  //     $blog = Engine_Api::_()->getItem('blog', $this->_getParam('blog_id'));
-  //     if( $blog ) {
-  //         Engine_Api::_()->core()->setSubject($blog);
-  //     }
+  public function viewAction()
+  {
+      // Check permission
+      $viewer = Engine_Api::_()->user()->getViewer();
+      $invoice = Engine_Api::_()->getItem('invoice', $this->_getParam('invoice_id'));
+      
+      
+      $purch = Engine_Api::_()->getItemTable('invoice_purchase')
+      ->getPurchases($invoice['invoice_number']);
+      $purchases=$purch->fetchAll();
 
-  //     if( !$this->_helper->requireSubject()->isValid() ) {
-  //         return;
-  //     }
-  //     if( !$this->_helper->requireAuth()->setAuthParams($blog, $viewer, 'view')->isValid() ) {
-  //         return;
-  //     }
-  //     if( !$blog || !$blog->getIdentity() ||
-  //         ($blog->draft && !$blog->isOwner($viewer)) ) {
-  //         return $this->_helper->requireSubject->forward();
-  //     }
+      $data = array();
+      foreach( $purchases as $purchase ) {
+        $data[$purchase['product_id']] = $purchase['product_name'];
+      }
+      
+      
+      
+      
+      // if( !$this->_helper->requireAuth()->setAuthParams($invoice, $viewer, 'view')->isValid() ) {
+      //     return;
+      // }
+      
+     
 
-  //     // Network check
-  //     $networkPrivacy = Engine_Api::_()->network()->getViewerNetworkPrivacy($blog);
-  //     if(empty($networkPrivacy))
-  //         return $this->_forward('requireauth', 'error', 'core');
+     
 
-  //     // Prepare data
-  //     $blogTable = Engine_Api::_()->getDbtable('blogs', 'blog');
+      $this->view->invoice = $invoice;
+      $this->view->owner = $owner = $invoice->getOwner();
+      $this->view->viewer = $viewer;
+      $this->view->products=$purchases;
 
-  //     if (strpos($blog->body, '<') === false) {
-  //         $blog->body = nl2br($blog->body);
-  //     }
+      
 
-  //     $this->view->blog = $blog;
-  //     $this->view->owner = $owner = $blog->getOwner();
-  //     $this->view->viewer = $viewer;
+      
 
-  //     if( !$blog->isOwner($viewer) ) {
-  //         $blogTable->update(array(
-  //             'view_count' => new Zend_Db_Expr('view_count + 1'),
-  //         ), array(
-  //             'blog_id = ?' => $blog->getIdentity(),
-  //         ));
-  //     }
+     
 
-  //     // Get tags
-  //     $this->view->blogTags = $blog->tags()->getTagMaps();
+      
 
-  //     // Get category
-  //     if( !empty($blog->category_id) ) {
-  //         $this->view->category = Engine_Api::_()->getDbtable('categories', 'blog')
-  //             ->find($blog->category_id)->current();
-  //     }
-
-  //     // Get styles
-  //     $table = Engine_Api::_()->getDbtable('styles', 'core');
-  //     $style = $table->select()
-  //         ->from($table, 'style')
-  //         ->where('type = ?', 'user_blog')
-  //         ->where('id = ?', $owner->getIdentity())
-  //         ->limit(1)
-  //         ->query()
-  //         ->fetchColumn();
-  //     if( !empty($style) ) {
-  //         try {
-  //             $this->view->headStyle()->appendStyle($style);
-  //         }
-  //             // silence any exception, exceptin in development mode
-  //         catch (Exception $e) {
-  //             if (APPLICATION_ENV === 'development') {
-  //                 throw $e;
-  //             }
-  //         }
-  //     }
-
-  //     // Render
-  //     $this->_helper->content
-  //         //->setNoRender()
-  //         ->setEnabled()
-  //     ;
-  // }
+      // // Render
+      // $this->_helper->content
+      //     //->setNoRender()
+      //     ->setEnabled()
+      // ;
+  }
 
   // // USER SPECIFIC METHODS
   // public function manageAction()
@@ -302,6 +268,12 @@ class Invoice_IndexController extends Core_Controller_Action_Standard
     $db->beginTransaction();
 
     try {
+      
+      if($values['currency'] == 0){
+        $conversionRate=1;
+      }else{
+        $conversionRate = Engine_Api::_()->getApi('settings', 'core')->getSetting('invoice.USDtoINR', 75);
+      }
 
       foreach ($prod as $key => $val) {
         //print_r($val);
@@ -314,8 +286,9 @@ class Invoice_IndexController extends Core_Controller_Action_Standard
             $row->cust_email = $email;
             $row->product_name = $second['product_name'];
             $row->purchase_date = date('Y-m-d H:i:s');
-            $row->product_price = $second['product_price'];
-            $amount = $amount + (int)$second['product_price'];
+            $row->product_price = (int)$second['product_price']*$conversionRate;
+            $amount = $amount + ((int)$second['product_price']*$conversionRate);
+            
             $row->save();
             $db2->commit();
           }
@@ -331,7 +304,7 @@ class Invoice_IndexController extends Core_Controller_Action_Standard
           $subtotal = $this->totalAmount($region, $amount, $discount);
         }
 
-
+       
 
 
       //Transaction
@@ -374,8 +347,8 @@ class Invoice_IndexController extends Core_Controller_Action_Standard
   {
     //for Haryana 
     if ($region == 0) {
-      $conversionRate = Engine_Api::_()->getApi('settings', 'core')->getSetting('invoice.USDtoINR', 75);
-      $amount = $amount * $conversionRate;
+     
+      
       $CGST = Engine_Api::_()->getApi('settings', 'core')->getSetting('invoice.CGST', 9);
       $SGST = Engine_Api::_()->getApi('settings', 'core')->getSetting('invoice.SGST', 9);
 
@@ -388,15 +361,15 @@ class Invoice_IndexController extends Core_Controller_Action_Standard
       $amount = $amount + $SGST + $CGST;
     } else if ($region == 1) {
       //for Out side of Haryana 
-      $conversionRate = Engine_Api::_()->getApi('settings', 'core')->getSetting('invoice.USDtoINR', 75);
-      $amount = $amount * $conversionRate;
+      
       $IGST = Engine_Api::_()->getApi('settings', 'core')->getSetting('invoice.IGST', 18);
       $discount = $amount * $discount / 100;
       $amount = $amount - $discount;
-
+    
       $IGST = $amount * $IGST / 100;
-
+    
       $amount = $amount + $IGST;
+    
     } else {
       //for USD
       $discount = $amount * $discount / 100;

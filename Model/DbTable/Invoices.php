@@ -29,6 +29,8 @@ class Invoice_Model_DbTable_Invoices extends Core_Model_Item_DbTable_Abstract
         //  die;
 
 
+        
+
 
         if (!empty($params['category'])) {
             $select->where($rName . '.category_id = ?', $params['category']);

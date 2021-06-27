@@ -2,13 +2,13 @@
 
   <form method="post" class="global_form_popup">
     <div>
-      <h3><?php echo $this->translate("Delete Blog?") ?></h3>
+      <h3><?php echo $this->translate("Delete Invoice?") ?></h3>
       <p>
-        <?php echo $this->translate("Are you sure that you want to delete this blog entry? It will not be recoverable after being deleted.") ?>
+        <?php echo $this->translate("Are you sure that you want to delete this invoice entry? It will not be recoverable after being deleted.") ?>
       </p>
       <br />
       <p>
-        <input type="hidden" name="confirm" value="<?php echo $this->blog_id?>"/>
+        <input type="hidden" name="confirm" value="<?php echo $this->invoice_id?>"/>
         <button type='submit'><?php echo $this->translate("Delete") ?></button>
         <?php echo $this->translate(" or ") ?> 
         <a href='javascript:void(0);' onclick='javascript:parent.Smoothbox.close()'>
