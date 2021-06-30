@@ -10,81 +10,57 @@ class Invoice_Model_DbTable_Invoices extends Core_Model_Item_DbTable_Abstract
 
     public function getInvoiceSelect($params = array())
     {
-        // echo "<pre>";
-        // print_r($params);
-        // die;
+       
         $viewer = Engine_Api::_()->user()->getViewer();
         $viewerId = $viewer->getIdentity();
         $table = Engine_Api::_()->getDbtable('invoices', 'invoice');
         $rName = $table->info('name');
 
-        //$tmTable = Engine_Api::_()->getDbtable('TagMaps', 'core');
-        //$tmName = $tmTable->info('name');
-        //$tmTable = Engine_Api::_()->getDbtable('tagmaps', 'blog');
-        //$tmName = $tmTable->info('name');
+       
 
         $select = $table->select();
-        // echo "<pre>";
-        // print_r($params);
-        //  die;
-
-
         
 
 
+        
+        if (!empty($params['email'])) {
+            $select->where($rName . '.cust_email = ?', $params['email']);
+            
+        }
+
         if (!empty($params['category'])) {
             $select->where($rName . '.category_id = ?', $params['category']);
-            // die('yo');
+            
         }
 
 
+        if (!empty($params['status'])) {
+            $select->where($rName . '.status = ?', $params['status']);
+            
+        }
 
-        //else $select->group("$rName.blog_id");
-
-        // Could we use the search indexer for this?
+        // Invoice Number
         if (!empty($params['search'])) {
-            $select->where($rName . ".title LIKE ? OR " . $rName . ".body LIKE ?", '%' . $params['search'] . '%');
+            $select->where($rName . ".invoice_number = ? " , $params['search'] );
         }
 
-
-
-
-
-        //$select = Engine_Api::_()->network()->getNetworkSelect($rName, $select);
 
         if (!empty($params['owner'])) {
             $select->where($rName . '.owner_id = ?', $params['owner']);
         }
 
-        // if (!Engine_Api::_()->getApi('settings', 'core')->getSetting('demo.allow.unauthorized', 0))
-        //     return $this->getAuthorisedSelect($select);
-        // else
-            return $select;
+       
+        return $select;
     }
 
 
 
 
-    public function getInvoicePaginator()
+    public function getInvoicePaginator($params = array())
     {
-        // echo "<pre>";
-        // print_r($params);
-        // die;
-        $paginator = Zend_Paginator::factory($this->getInvoiceSelect());
-        // if( !empty($params['page']) )
-        // {
-        //     $paginator->setCurrentPageNumber($params['page']);
-        // }
-        // if( !empty($params['limit']) )
-        // {
-        //     $paginator->setItemCountPerPage($params['limit']);
-        // }
-
-        // if( empty($params['limit']) )
-        // {
-        //     $page = 10;
-        //     $paginator->setItemCountPerPage($page);
-        // }
+       
+        $paginator = Zend_Paginator::factory($this->getInvoiceSelect($params));
+        
 
         return $paginator;
     }
@@ -199,4 +175,15 @@ class Invoice_Model_DbTable_Invoices extends Core_Model_Item_DbTable_Abstract
             return $num . "/" ."GST". $category . "/" . $firstYear . "-" . $secondYear;
         }
     }
+
+
+
+    public function updateOwner($userId,$userName){
+        $whereClause = array(
+            'owner_id = ?' =>$userId,
+        );  
+    
+        $this->update(array("owner_id"=>1,"owner_type"=>'user'),$whereClause);
+    
+      }
 }

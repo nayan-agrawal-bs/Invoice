@@ -20,6 +20,10 @@
       3 => 'enable',
       4 => 'disable',
     ),
+    'callback' => array(
+      'path' => 'application/modules/Invoice/settings/install.php',
+      'class' => 'Invoice_Installer',
+    ),
     'directories' => 
     array (
       0 => 'application/modules/Invoice',
@@ -30,6 +34,12 @@
     ),
   ),
 
+  'hooks' => array(
+    array(
+      'event' => 'onUserDeleteBefore',
+      'resource' => 'Invoice_Plugin_Core',
+    ),
+  ),
 
   'items' => array(
     'invoice',

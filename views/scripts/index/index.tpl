@@ -5,11 +5,7 @@
 
 
 <style type="text/css">
-  #global_wrapper{
-    background-color: #fcfcfc !important;
-    border-top: 1px solid gray;
-}
-
+  
 table{
     /border: 1px solid black;/
     width: 100%;
@@ -76,7 +72,12 @@ tr:nth-child(even) {
         <td><?php echo $item->cust_name ?> </td>
         <td><?php echo $this->locale()->toDateTime($item->creation_date) ?></td>
         <td><?php echo $item->amount ?></td>
-        <td><?php echo $item->status?></td>
+        
+        <?php if( !$item->status ): ?>
+        <td><?php echo $this->translate("Pending") ?></td>
+        <?php else: ?>
+        <td><?php echo $this->translate("Paid") ?></td>
+        <?php endif; ?>
         <td>
         <?php echo $this->htmlLink(array(
               'action' => 'view',

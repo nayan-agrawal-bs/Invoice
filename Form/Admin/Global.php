@@ -49,6 +49,52 @@ class Invoice_Form_Admin_Global extends Engine_Form
 
 
 
+    $this->addElement('Text', 'invoice_bname', array(
+      'label' => 'Bank Name',
+      'value' => Engine_Api::_()->getApi('settings', 'core')->getSetting('invoice.bname', "HDFC"),
+    ));
+
+    $this->addElement('Text', 'invoice_baddress', array(
+      'label' => 'Bank Address',
+      'value' => Engine_Api::_()->getApi('settings', 'core')->getSetting('invoice.baddress', "C&&"),
+    ));
+
+    $this->addElement('Text', 'invoice_baccnumber', array(
+      'label' => 'Bank Acc. No.',
+      'value' => Engine_Api::_()->getApi('settings', 'core')->getSetting('invoice.baccnumber', 9887954625),
+    ));
+
+    $this->addElement('Text', 'invoice_baccname', array(
+      'label' => 'Bank Acc. Name',
+      'value' => Engine_Api::_()->getApi('settings', 'core')->getSetting('invoice.baccname', "bstep"),
+    ));
+
+    $this->addElement('Text', 'invoice_ifsc', array(
+      'label' => 'Bank IFSC code',
+      'value' => Engine_Api::_()->getApi('settings', 'core')->getSetting('invoice.ifsc', 'HDFC0088'),
+    ));
+
+    $this->addElement('Text', 'invoice_cname', array(
+      'label' => 'Company Name',
+      'value' => Engine_Api::_()->getApi('settings', 'core')->getSetting('invoice.cname', "BIG STEP"),
+    ));
+
+    $this->addElement('Text', 'invoice_cnum', array(
+      'label' => 'Company Contact No.',
+      'value' => Engine_Api::_()->getApi('settings', 'core')->getSetting('invoice.cnum', 1234569870),
+    ));
+
+    $this->addElement('Text', 'invoice_caddress', array(
+      'label' => 'Company Address',
+      'value' => Engine_Api::_()->getApi('settings', 'core')->getSetting('invoice.caddress', "XYZ"),
+    ));
+
+
+    $this->addElement('Text', 'invoice_gstno', array(
+      'label' => 'GST No.',
+      'value' => Engine_Api::_()->getApi('settings', 'core')->getSetting('invoice.gstno', 434343434),
+    ));
+
     // Add submit button
     $this->addElement('Button', 'submit', array(
       'label' => 'Save Changes',

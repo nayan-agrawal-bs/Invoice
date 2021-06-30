@@ -2,9 +2,11 @@
 
 	$invoice = $this->invoice;
 	$products = $this->products;
+	$details= $this->details;
 
+	
 
-	$cnt = 1;
+	
 ?>
 
 <style>
@@ -16,36 +18,44 @@
 	background-color: #fcfcfc !important;
 	border-top: 1px solid gray;
 }
+
 </style>
 
 
 
-<div class="container ">
+<div class="container" id='main_content'>
 	<header>
 
-		<!--show header with image -->
+	
 
 	</header>
 
 
-	<div class="content">
+	<div class="container">
 
-		<h3 class="text-lg text-center">Invoice</h1>
+		<h3 class="text-lg text-center"><?php echo $this->translate("Invoice") ?></h1>
 
 
 			<div class="grid grid-cols-4 grid-flow-col gap-4">
 
 				<div class="col-span-3">
-					<p>Customer Name:<?=$invoice['cust_name']?></p>
-					<p>Address:<?=$invoice['cust_address']?></p>
-					<p>Contact No:<?=$invoice['cust_contact']?></p>
-					<p>Email:<?=$invoice['cust_email']?></p>
+					<p><?php echo $this->translate("Customer Name") ?>:
+						<?=$invoice['cust_name']?></p>
+					<p><?php echo $this->translate("Address") ?>:
+						<?=$invoice['cust_address']?></p>
+					<p><?php echo $this->translate("Contact No.") ?>:
+						<?=$invoice['cust_contact']?></p>
+					<p><?php echo $this->translate("Email") ?>:
+						<?=$invoice['cust_email']?></p>
 					
 				</div>
 
 				<div class="col-span-1">
-          <p>Invoice Number:<?=$invoice['invoice_number']?></p>
-					<p>Date: <?=$invoice['creation_date']?></p>
+          
+		  			<p>Invoice Number:
+		  				<?=$invoice['invoice_number']?></p>
+					<p><?php echo $this->translate("Customer Date") ?>: 
+						<?=$invoice['creation_date']?></p>
 
 				</div>
 
@@ -56,9 +66,9 @@
 				<table class="w-10/12 border-2 table-fixed">
 					<thead class="border-2">
 						<tr>
-							<th class="border-2 p-1">S NO.</th>
-							<th class="border-2 p-1">Product Name</th>
-							<th class="border-2 p-1">Amount</th>
+							<th class="border-2 p-1"><?php echo $this->translate("S No.") ?></th>
+							<th class="border-2 p-1"><?php echo $this->translate("Product Name") ?></th>
+							<th class="border-2 p-1"><?php echo $this->translate("Price") ?></th>
 						</tr>
 
 					</thead>
@@ -85,34 +95,49 @@
 								<?=$invoice['discount']?>
 							</td>
 						</tr>
-						<?php if($invoice['currency']): ?>
-						<?php if($invoice['region']): ?>
-						<tr>
-							<td></td>
-							
-						</tr>
 						
+						
+
+
+
+					<?php if($invoice['currency']): ?>
+							<?php if($invoice['region']): ?>
+								<tr>
+									<td></td>
+									<td class="border-2 p-1"><?php echo $this->translate("IGST %") ?></td>
+									<td class="border-2 p-1"><?=$invoice['IGST'];?></td>
+								</tr>
+
+							<?php else: ?>
+								<tr>
+									<td></td>
+									<td class="border-2 p-1"><?php echo $this->translate("SGST %") ?></td>
+									<td class="border-2 p-1"><?=$invoice['CGST'];?></td>
+								</tr>
+								<tr>
+									<td></td>
+									<td class="border-2 p-1"><?php echo $this->translate("CGST %") ?></td>
+									<td class="border-2 p-1"><?=$invoice['SGST'];?></td>
+								</tr>
+
+							<?php endif; ?>
+							<tr>
+							<td></td>
+							<td class="border-2 p-1"><?php echo $this->translate("Total (INR)") ?></td>
+							<td class="border-2 p-1"><?=$invoice['subtotal']?></td>
+						</tr>
 						<?php else: ?>
 						<tr>
 							<td></td>
-							
-						</tr>
-						<tr>
-							<td></td>
-						
-						</tr>
-
-						<?php endif; ?>
-
-						<?php endif; ?>
-
-
-
-						<tr>
-							<td></td>
-							<td class="border-2 p-1">Total</td>
+							<td class="border-2 p-1"><?php echo $this->translate("Total (USD)") ?></td>
 							<td class="border-2 p-1"><?=$invoice['subtotal']?></td>
 						</tr>
+
+						<?php endif; ?>
+
+
+
+						
 					</tbody>
 				</table>
 
@@ -121,10 +146,41 @@
 
 
 
+
+
+		
+
+			<h2>Bank Details:</h2>
+
+			<p><?php echo $this->translate("Account Name") ?>:<?=$details['baccname']?></p>
+			<p><?php echo $this->translate("Account N0.") ?>:<?=$details['baccnumber']?></p>
+			<p><?php echo $this->translate("Bank") ?><?=$details['bname']?></p>
+			<p><?php echo $this->translate("Bank Address") ?>:<?=$details['baddress']?></p>
+			<p><?php echo $this->translate("IFSC Code") ?>:<?=$details['ifsc']?></p>
+
 		</div>
 
 
 
 
 	</div>
+
+
+	<button onclick="printDiv()" > Print</button>
+
+
+	<script type="text/javascript">
+
+		function printDiv() {
+			var printContents = document.getElementById('main_content').innerHTML;
+			var originalContents = document.body.innerHTML;
+
+			document.body.innerHTML = printContents;
+
+			window.print();
+
+			document.body.innerHTML = originalContents;
+		}
+
+	</script>
 

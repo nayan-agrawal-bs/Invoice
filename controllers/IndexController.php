@@ -18,21 +18,21 @@ class Invoice_IndexController extends Core_Controller_Action_Standard
 
     // Make form
     // Note: this code is duplicated in the blog.browse-search widget
-    //$this->view->form = $form = new Blog_Form_Search();
+    $this->view->form = $form = new Invoice_Form_Search();
 
     // $form->removeElement('draft');
     // if( !$viewer->getIdentity() ) {
     //     $form->removeElement('show');
     // }
 
-    // // Process form
-    // $defaultValues = $form->getValues();
-    // if( $form->isValid($this->_getAllParams()) ) {
-    //     $values = $form->getValues();
-    // } else {
-    //     $values = $defaultValues;
-    // }
-    // $this->view->formValues = array_filter($values);
+    // Process form
+    $defaultValues = $form->getValues();
+    if( $form->isValid($this->_getAllParams()) ) {
+        $values = $form->getValues();
+    } else {
+        $values = $defaultValues;
+    }
+    $this->view->formValues = array_filter($values);
     // $values['draft'] = "0";
     // $values['visible'] = "1";
 
@@ -56,10 +56,10 @@ class Invoice_IndexController extends Core_Controller_Action_Standard
     // }
 
     // // Render
-    // $this->_helper->content
-    //     //->setNoRender()
-    //     ->setEnabled()
-    // ;
+    $this->_helper->content
+        //->setNoRender()
+        ->setEnabled()
+    ;
   }
 
   public function viewAction()
@@ -81,11 +81,27 @@ class Invoice_IndexController extends Core_Controller_Action_Standard
       
       
       
-      // if( !$this->_helper->requireAuth()->setAuthParams($invoice, $viewer, 'view')->isValid() ) {
-      //     return;
-      // }
+      if( !$this->_helper->requireAuth()->setAuthParams($invoice, $viewer, 'view')->isValid() ) {
+          return;
+      }
       
      
+      $keys=['bname','baccname','baccnumber','baddress','ifsc','cname','cnum','gstno','caddress'];
+
+
+      $details=array();
+
+
+      foreach($keys as $key){
+
+        $details[$key]= Engine_Api::_()->getApi('settings', 'core')->
+        getSetting('invoice.'.$key, '000000');
+
+      }
+
+    //  print_r($details);
+    //  die;
+
 
      
 
@@ -93,6 +109,7 @@ class Invoice_IndexController extends Core_Controller_Action_Standard
       $this->view->owner = $owner = $invoice->getOwner();
       $this->view->viewer = $viewer;
       $this->view->products=$purchases;
+      $this->view->details=$details;
 
       
 
@@ -109,42 +126,7 @@ class Invoice_IndexController extends Core_Controller_Action_Standard
       // ;
   }
 
-  // // USER SPECIFIC METHODS
-  // public function manageAction()
-  // {
-  //     if( !$this->_helper->requireUser()->isValid() ) return;
-
-  //     // Render
-  //     $this->_helper->content
-  //         //->setNoRender()
-  //         ->setEnabled()
-  //     ;
-
-
-  //     // Prepare data
-  //     $viewer = Engine_Api::_()->user()->getViewer();
-  //     $this->view->form = $form = new Blog_Form_Search();
-  //     $this->view->canCreate = $this->_helper->requireAuth()->setAuthParams('blog', null, 'create')->checkRequire();
-
-  //     $form->removeElement('show');
-
-  //     // Process form
-  //     $defaultValues = $form->getValues();
-  //     if( $form->isValid($this->_getAllParams()) ) {
-  //         $values = $form->getValues();
-  //     } else {
-  //         $values = $defaultValues;
-  //     }
-  //     $this->view->formValues = array_filter($values);
-  //     $values['user_id'] = $viewer->getIdentity();
-
-  //     // Get paginator
-  //     $this->view->paginator = $paginator = Engine_Api::_()->getItemTable('blog')->getBlogsPaginator($values);
-  //     $items_per_page = Engine_Api::_()->getApi('settings', 'core')->blog_page;
-  //     $paginator->setItemCountPerPage($items_per_page);
-  //     $this->view->paginator = $paginator->setCurrentPageNumber( $values['page'] );
-  // }
-
+  
 
   public function createAction()
   {
@@ -157,28 +139,7 @@ class Invoice_IndexController extends Core_Controller_Action_Standard
     //     ->setEnabled()
     // ;
 
-    // set up data needed to check quota
-    // $viewer = Engine_Api::_()->user()->getViewer();
-    // $values['user_id'] = $viewer->getIdentity();
-    // $paginator = Engine_Api::_()->getItemTable('invoiced')->getInvoicePaginator();
-
-    // //$this->view->quota = $quota = Engine_Api::_()->authorization()->getPermission($viewer->level_id, 'blog', 'max');
-    // $this->view->current_count = $paginator->getTotalItemCount();
-
-    // $parent_type = $this->_getParam('parent_type');
-    // $parent_id = $this->_getParam('parent_id', $this->_getParam('subject_id'));
-
-    // if( $parent_type == 'group' && Engine_Api::_()->hasItemType('group') ) {
-    //     $this->view->group = $group = Engine_Api::_()->getItem('group', $parent_id);
-    //     if( !Engine_Api::_()->authorization()->isAllowed('group', $viewer, 'blog') ) {
-    //         return;
-    //     }
-    // } else {
-    //     $parent_type = 'user';
-    //     $parent_id = $viewer->getIdentity();
-    // }
-
-    // $this->view->parent_type = $parent_type;
+    
     // Prepare form
     $this->view->form = $form = new Invoice_Form_Create();
 
@@ -220,10 +181,7 @@ class Invoice_IndexController extends Core_Controller_Action_Standard
     }
 
    
-    // echo "<pre>";
-    // print_r($products);
-    // die;
-
+   
 
 
 
@@ -239,8 +197,12 @@ class Invoice_IndexController extends Core_Controller_Action_Standard
     $category_id = $values['category_id'];
     $prod = $values['product_id'];
 
+    $CGST = Engine_Api::_()->getApi('settings', 'core')->getSetting('invoice.CGST', 9);
+          $SGST = Engine_Api::_()->getApi('settings', 'core')->getSetting('invoice.SGST', 9);
+          $IGST = Engine_Api::_()->getApi('settings', 'core')->getSetting('invoice.IGST', 18);
 
-    $product1 = Engine_Api::_()->getItemTable('invoice_product')-> getProductsWithCategory($category_id);
+
+    $product1 = Engine_Api::_()->getItemTable('invoice_product')->getProductsWithCategory($category_id);
     $products = $product1->fetchAll();
 
 
@@ -299,11 +261,21 @@ class Invoice_IndexController extends Core_Controller_Action_Standard
 
         if ($values['currency'] == 0) {
           $region = 3;
-          $subtotal = $this->totalAmount($region, $amount, $discount);
-        } else {
-          $subtotal = $this->totalAmount($region, $amount, $discount);
-        }
+          $IGST=0;
+          $SGST=0;
+          $CGST=0;
+          $subtotal = $this->totalAmount($region, $amount, $discount,$CGST,$IGST,$SGST);
+        } 
+        if($values['currency'] == 1 && $region == 0){
+          $IGST=0;
+          $subtotal = $this->totalAmount($region, $amount, $discount,$CGST,$IGST,$SGST);
+        } 
 
+        if($values['currency'] == 1 && $region == 1){
+          $SGST=0;
+          $CGST=0;
+          $subtotal = $this->totalAmount($region, $amount, $discount,$CGST,$IGST,$SGST);
+        }
        
 
 
@@ -327,6 +299,9 @@ class Invoice_IndexController extends Core_Controller_Action_Standard
       $row->discount = $discount;
       $row->amount = $amount;
       $row->subtotal=$subtotal;
+      $row->SGST=$SGST;
+      $row->CGST=$CGST;
+      $row->IGST=$IGST;
       $row->save();
 
 
@@ -343,14 +318,12 @@ class Invoice_IndexController extends Core_Controller_Action_Standard
 
 
   // function to get total amount on the bases of region and discount
-  public function totalAmount($region, $amount, $discount)
+  public function totalAmount($region, $amount, $discount,$CGST,$IGST,$SGST)
   {
     //for Haryana 
     if ($region == 0) {
      
       
-      $CGST = Engine_Api::_()->getApi('settings', 'core')->getSetting('invoice.CGST', 9);
-      $SGST = Engine_Api::_()->getApi('settings', 'core')->getSetting('invoice.SGST', 9);
 
       $discount = $amount * $discount / 100;
       $amount = $amount - $discount;
@@ -362,7 +335,7 @@ class Invoice_IndexController extends Core_Controller_Action_Standard
     } else if ($region == 1) {
       //for Out side of Haryana 
       
-      $IGST = Engine_Api::_()->getApi('settings', 'core')->getSetting('invoice.IGST', 18);
+      
       $discount = $amount * $discount / 100;
       $amount = $amount - $discount;
     
@@ -452,9 +425,9 @@ class Invoice_IndexController extends Core_Controller_Action_Standard
         //  print_r($data);
         //  die;
 
-      // if( !$this->_helper->requireAuth()->setAuthParams($invoice, $viewer, 'edit')->isValid() ) {
-      //     return;
-      // }
+      if( !$this->_helper->requireAuth()->setAuthParams($invoice, $viewer, 'edit')->isValid() ) {
+          return;
+      }
 
       // Prepare form
       $this->view->form = $form = new Invoice_Form_Edit();
@@ -595,7 +568,9 @@ class Invoice_IndexController extends Core_Controller_Action_Standard
   {
       $viewer = Engine_Api::_()->user()->getViewer();
       $invoice = Engine_Api::_()->getItem('invoice', $this->getRequest()->getParam('invoice_id'));
-      //if( !$this->_helper->requireAuth()->setAuthParams($blog, null, 'delete')->isValid()) return;
+     
+     
+      if( !$this->_helper->requireAuth()->setAuthParams($invoice, null, 'delete')->isValid()) return;
 
       // In smoothbox
       $this->_helper->layout->setLayout('default-simple');
