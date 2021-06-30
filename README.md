@@ -2,5 +2,5 @@
 
 <h2>Setp's to start the project in your system</h2>
 
-1. Install the Plugin Tar From The DownloadFile Folder["FilePath:- DownloadFile/"]
+1. Download the tar file.
 2. Now install the downloaded tar file in social engine.
