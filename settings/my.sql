@@ -1,10 +1,10 @@
 INSERT IGNORE INTO `engine4_core_modules` (`name`, `title`, `description`, `version`, `enabled`, `type`) VALUES 
- ('invoice', 'Invoice', 'Can be used o create invoices', '5.5.0', 1, 'extra') ;
+ ('invoice', 'Invoice', 'Can be used to create invoices', '5.5.0', 1, 'extra') ;
 
 
 
 
--- --------------------------------------------------------
+
 
 --
 -- Table structure for table `engine4_invoice_invoices`
@@ -39,7 +39,7 @@ CREATE TABLE `engine4_invoice_invoices` (
 
 
 
--- --------------------------------------------------------
+
 
 --
 -- Table structure for table `engine4_invoice_categories`
@@ -61,7 +61,7 @@ CREATE TABLE `engine4_invoice_categories` (
 
 
 
--------------------------------------------------------------------------------------------------
+
 
 --
 -- Table structure for table `engine4_invoice_products`
@@ -79,7 +79,7 @@ CREATE TABLE `engine4_invoice_products` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci;
 
 
--------------------------------------------------------------------------------------------------
+
 
 --
 -- Table structure for table `engine4_invoice_purchases`
@@ -98,7 +98,6 @@ CREATE TABLE `engine4_invoice_purchases` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci;
 
 
---
 
 
 
@@ -110,7 +109,8 @@ CREATE TABLE `engine4_invoice_purchases` (
 
 
 
-- --------------------------------------------------------
+
+
 
 --
 -- Dumping data for table `engine4_core_menus`
@@ -121,7 +121,7 @@ INSERT IGNORE INTO `engine4_core_menus` (`name`, `type`, `title`) VALUES
 
 
 
--- --------------------------------------------------------
+
 
 --
 -- Dumping data for table `engine4_core_menuitems`

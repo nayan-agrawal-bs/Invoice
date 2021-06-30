@@ -226,7 +226,10 @@ class Invoice_AdminSettingsController extends Core_Controller_Action_Admin
     
     // Process
     $values = $form->getValues();
-
+    
+    // if (!is_numeric($values['price'])) {
+    //   return $form->addError('Please enter');
+    // }
     // $product_id = $this->_getAllParams();
     // //$this->view->product_id = $product_id;
     // $productsTable = Engine_Api::_()->getDbtable('products', 'invoice');

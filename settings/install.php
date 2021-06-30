@@ -8,20 +8,20 @@ class Invoice_Installer extends Engine_Package_Installer_Module
     {
         $db = $this->getDb();
         if($this->_databaseOperationType != 'upgrade'){
-            $this->_addInvoiceManagePage();
+            $this->_addInvoiceIndexPage();
         }
 
         parent::onInstall();
     }
 
-    protected function _addInvoiceManagePage()
+    protected function _addInvoiceIndexPage()
     {
         $db = $this->getDb();
 
         // profile page
         $pageId = $db->select()
             ->from('engine4_core_pages', 'page_id')
-            ->where('name = ?', 'invoice_index_manage')
+            ->where('name = ?', 'invoice_index_index')
             ->limit(1)
             ->query()
             ->fetchColumn();
@@ -30,7 +30,7 @@ class Invoice_Installer extends Engine_Package_Installer_Module
         if( !$pageId ) {
             // Insert page
             $db->insert('engine4_core_pages', array(
-                'name' => 'invoice_index_manage',
+                'name' => 'invoice_index_index',
                 'displayname' => 'Invoice Manage Page',
                 'title' => 'My Entries',
                 'description' => 'This page lists a users Invoice entries.',

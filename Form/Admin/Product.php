@@ -26,7 +26,7 @@ class Invoice_Form_Admin_Product extends Engine_Form
     $price->setLabel('Price')
       ->addValidator('NotEmpty')
       ->setRequired(true)
-      ->setAttrib('class', 'numer');
+      ->setAttrib('class', 'number');
 
     $id = new Zend_Form_Element_Hidden('id');
 

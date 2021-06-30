@@ -22,29 +22,30 @@ class Invoice_Model_DbTable_Invoices extends Core_Model_Item_DbTable_Abstract
         
 
 
-        
+        // for searching using email
         if (!empty($params['email'])) {
             $select->where($rName . '.cust_email = ?', $params['email']);
             
         }
 
+        // for searching using category
         if (!empty($params['category'])) {
             $select->where($rName . '.category_id = ?', $params['category']);
             
         }
 
-
+        // for searching using payment status
         if (!empty($params['status'])) {
             $select->where($rName . '.status = ?', $params['status']);
             
         }
 
-        // Invoice Number
+        // // for searching using Invoice Number
         if (!empty($params['search'])) {
             $select->where($rName . ".invoice_number = ? " , $params['search'] );
         }
 
-
+        //for manage page admin search is working without this
         if (!empty($params['owner'])) {
             $select->where($rName . '.owner_id = ?', $params['owner']);
         }
@@ -65,7 +66,7 @@ class Invoice_Model_DbTable_Invoices extends Core_Model_Item_DbTable_Abstract
         return $paginator;
     }
 
-
+    // for generating invoice number
     public function getInvoiceNumber($category_id,$currnecy)
     {
         $categoryArray = Engine_Api::_()->getItemTable('invoice_category')->getCategoriesAssoc();

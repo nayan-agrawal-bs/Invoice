@@ -170,7 +170,7 @@ class Invoice_IndexController extends Core_Controller_Action_Standard
       return $form->addError('Please enter a valid number');
     } else {
       $number = $values['cust_number'];
-      if (preg_match('/^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}$/', $number)) {
+      if (preg_match('/^(\+\d{1,3}[- ]?)?\d{10}$/', $number)) {
         return $form->addError('Please enter a valid number');
       }
     }
@@ -237,6 +237,7 @@ class Invoice_IndexController extends Core_Controller_Action_Standard
         $conversionRate = Engine_Api::_()->getApi('settings', 'core')->getSetting('invoice.USDtoINR', 75);
       }
 
+      // for entry into products
       foreach ($prod as $key => $val) {
         //print_r($val);
         foreach ($products as $first => $second) {
@@ -473,6 +474,13 @@ class Invoice_IndexController extends Core_Controller_Action_Standard
       try {
           $values = $form->getValues();
           
+
+          
+      if($invoice['currency'] == 0){
+        $conversionRate=1;
+      }else{
+        $conversionRate = Engine_Api::_()->getApi('settings', 'core')->getSetting('invoice.USDtoINR', 75);
+      }
           $amount=$invoice['amount'];
           $invoice_number=$invoice['invoice_number'];
           
@@ -482,10 +490,16 @@ class Invoice_IndexController extends Core_Controller_Action_Standard
           $discount=$values['discount'];
           $region= $values['region'];
 
+          
+    $CGST = Engine_Api::_()->getApi('settings', 'core')->getSetting('invoice.CGST', 9);
+    $SGST = Engine_Api::_()->getApi('settings', 'core')->getSetting('invoice.SGST', 9);
+    $IGST = Engine_Api::_()->getApi('settings', 'core')->getSetting('invoice.IGST', 18);
+
 
         if(!empty($values['product_id'])){
         $prod = $values['product_id'];
-
+          
+        // for deleting  products entry
           foreach ($prod as $key => $val) {
             //print_r($val);
             foreach ($purchases as $first => $second) {
@@ -507,6 +521,7 @@ class Invoice_IndexController extends Core_Controller_Action_Standard
         }
          
 
+          //for editing product entries
           if(!empty($values['product_id1'])){
           $prod=$values['product_id1'];
           foreach ($prod as $key => $val) {
@@ -520,8 +535,8 @@ class Invoice_IndexController extends Core_Controller_Action_Standard
                 $row->cust_email = $email;
                 $row->product_name = $second['product_name'];
                 $row->purchase_date = $invoice['creation_date'];
-                $row->product_price = $second['product_price'];
-                $amount = $amount + (int)$second['product_price'];
+                $row->product_price = $second['product_price']*$conversionRate;
+                $amount = $amount + (int)$second['product_price']*$conversionRate;
                 $row->save();
                 $db2->commit();
               }
@@ -529,14 +544,23 @@ class Invoice_IndexController extends Core_Controller_Action_Standard
           }
         }
 
-         $subtotal=0;
-          if ($values['currency'] == 0) {
-            $region = 3;
-            $subtotal = $this->totalAmount($region, $amount, $discount);
-          } else {
-            $subtotal = $this->totalAmount($region, $amount, $discount);
-          }
+        if ($invoice['currency'] == 0) {
+          $region = 3;
+          $IGST=0;
+          $SGST=0;
+          $CGST=0;
+          $subtotal = $this->totalAmount($region, $amount, $discount,$CGST,$IGST,$SGST);
+        } 
+        if($invoice['currency'] == 1 && $region == 0){
+          $IGST=0;
+          $subtotal = $this->totalAmount($region, $amount, $discount,$CGST,$IGST,$SGST);
+        } 
 
+        if($invoice['currency'] == 1 && $region == 1){
+          $SGST=0;
+          $CGST=0;
+          $subtotal = $this->totalAmount($region, $amount, $discount,$CGST,$IGST,$SGST);
+        }
           
 
          
@@ -547,6 +571,9 @@ class Invoice_IndexController extends Core_Controller_Action_Standard
           $invoice->modified_date = date('Y-m-d H:i:s');
           $invoice->amount=$amount;
           $invoice->subtotal=$subtotal;
+          $invoice->SGST=$SGST;
+          $invoice->CGST=$CGST;
+          $invoice->IGST=$IGST;
           $invoice->save(); 
 
           $db->commit();
